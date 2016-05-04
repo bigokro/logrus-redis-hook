@@ -92,7 +92,7 @@ func (hook *RedisHook) Fire(entry *logrus.Entry) error {
 		return fmt.Errorf("error creating message for REDIS: %s", err)
 	}
 
-	fmt.Println("Created message for REDIS:", js)
+	fmt.Println("Created message for REDIS:", string(js))
 	conn := hook.RedisPool.Get()
 	defer conn.Close()
 
