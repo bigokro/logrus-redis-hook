@@ -84,18 +84,25 @@ func (hook *RedisHook) Fire(entry *logrus.Entry) error {
 		msg = createV1Message(entry, hook.AppName)
 	}
 
+	fmt.Println("Creating message for REDIS:", msg)
+
 	js, err := json.Marshal(msg)
 	if err != nil {
+		fmt.Printf("error creating message for REDIS: %\n", err)
 		return fmt.Errorf("error creating message for REDIS: %s", err)
 	}
 
+	fmt.Println("Created message for REDIS:", js)
 	conn := hook.RedisPool.Get()
 	defer conn.Close()
 
+	fmt.Println("Sending message to REDIS")
 	_, err = conn.Do("RPUSH", hook.RedisKey, js)
 	if err != nil {
+		fmt.Printf("error sending message to REDIS: %s\n", err)
 		return fmt.Errorf("error sending message to REDIS: %s", err)
 	}
+	fmt.Println("Message sent to REDIS")
 	return nil
 }
 
