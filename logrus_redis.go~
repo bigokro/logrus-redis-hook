@@ -60,7 +60,7 @@ func NewHook(host string, port int, key string, format string, appname string) (
 	}
 
 	// by default, use V0 format
-	if strings.ToLower(format) != "v0" && strings.ToLower(format) != "v1" && strings.ToLower(format) != "raw" {
+	if strings.ToLower(format) != "v0" && strings.ToLower(format) != "v1" {
 		format = "v0"
 	}
 
