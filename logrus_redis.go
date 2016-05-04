@@ -75,34 +75,37 @@ func NewHook(host string, port int, key string, format string, appname string) (
 
 // Fire is called when a log event is fired.
 func (hook *RedisHook) Fire(entry *logrus.Entry) error {
-	var msg interface{}
+	var js []byte
+	if hook.LogstashFormat == "raw" {
+		msg, err := entry.String()
+		if err != nil {
+			return fmt.Errorf("error creating raw message for REDIS: %s", err)
+		}
+		js = []byte(msg)
+	} else {
+		var msg interface{}
 
-	switch hook.LogstashFormat {
-	case "v0":
-		msg = createV0Message(entry, hook.AppName)
-	case "v1":
-		msg = createV1Message(entry, hook.AppName)
+		switch hook.LogstashFormat {
+		case "v0":
+			msg = createV0Message(entry, hook.AppName)
+		case "v1":
+			msg = createV1Message(entry, hook.AppName)
+		}
+
+		var err error
+		js, err = json.Marshal(msg)
+		if err != nil {
+			return fmt.Errorf("error creating message for REDIS: %s", err)
+		}
 	}
 
-	fmt.Println("Creating message for REDIS:", msg)
-
-	js, err := json.Marshal(msg)
-	if err != nil {
-		fmt.Printf("error creating message for REDIS: %\n", err)
-		return fmt.Errorf("error creating message for REDIS: %s", err)
-	}
-
-	fmt.Println("Created message for REDIS:", string(js))
 	conn := hook.RedisPool.Get()
 	defer conn.Close()
 
-	fmt.Println("Sending message to REDIS")
-	_, err = conn.Do("RPUSH", hook.RedisKey, js)
+	_, err := conn.Do("RPUSH", hook.RedisKey, js)
 	if err != nil {
-		fmt.Printf("error sending message to REDIS: %s\n", err)
 		return fmt.Errorf("error sending message to REDIS: %s", err)
 	}
-	fmt.Println("Message sent to REDIS")
 	return nil
 }
 
