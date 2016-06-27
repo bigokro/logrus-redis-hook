@@ -2,7 +2,7 @@ package main
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/rogierlommers/logrus-redis-hook"
+	"github.com/bigokro/logrus-redis-hook"
 )
 
 func init() {
